@@ -1,0 +1,18 @@
+function doPost(req) {
+  try {
+    let data = JSON.parse(req.postData.contents);
+    let dcode64 = Utilities.base64Decode(data.file);
+    let blob = Utilities.newBlob(dcode64, data.type, data.name);
+    let insert = Drive.Files.insert({
+      title: data.name,
+      mimeType: data.type
+    }, blob, {
+      ocr: true
+    });
+    let text = DocumentApp.openById(insert.id).getBody().getText();
+    Drive.Files.remove(insert.id);
+    return ContentService.createTextOutput(text);
+  } catch (err) {
+    return ContentService.createTextOutput(err);
+  }
+}
